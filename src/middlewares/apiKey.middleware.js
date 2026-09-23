@@ -1,15 +1,33 @@
-require('dotenv').config();
+const { buscarClientePorApiKey } = require("../services/apiKeys.service");
 
+// ========================================
+// Validar API Key
+// ========================================
 const validarApiKey = (req, res, next) => {
-  const apiKeyRecibida = req.header('x-api-key');
+  const apiKeyRecibida = req.get("X-API-Key");
 
+  // API Key ausente
   if (!apiKeyRecibida) {
-    return res.status(401).json({ mensaje: 'Falta el header x-api-key' });
+    return res.status(401).json({ mensaje: "API Key requerida" });
   }
 
-  if (apiKeyRecibida !== process.env.API_KEY) {
-    return res.status(401).json({ mensaje: 'API key inválida' });
+  // Buscar cliente
+  const cliente = buscarClientePorApiKey(apiKeyRecibida);
+
+  if (!cliente) {
+    return res.status(401).json({ mensaje: "API Key inválida" });
   }
+
+  // Verificar estado
+  if (!cliente.activa) {
+    return res.status(403).json({ mensaje: "API Key deshabilitada" });
+  }
+
+  // Asociar cliente autenticado a la petición
+  req.clienteApi = {
+    id: cliente.id,
+    nombre: cliente.cliente,
+  };
 
   next();
 };
