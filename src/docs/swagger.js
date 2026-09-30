@@ -14,12 +14,27 @@ const opciones = {
         description: 'Servidor local',
       },
     ],
+    tags: [
+      { name: 'Categorias', description: 'Gestión de categorías de productos' },
+      { name: 'Proveedores', description: 'Gestión de proveedores' },
+      { name: 'Productos', description: 'Gestión de productos e inventario' },
+      { name: 'Ventas', description: 'Registro de ventas diarias y control de inventario' },
+      { name: 'Seguridad', description: 'Endpoints relacionados con autenticación y seguridad de la API' },
+      { name: 'Autenticacion', description: 'Registro e inicio de sesión de usuarios' },
+    ],
     components: {
       securitySchemes: {
         ApiKeyAuth: {
           type: 'apiKey',
           in: 'header',
-          name: 'x-api-key',
+          name: 'X-API-Key',
+          description: 'API Key requerida para consumir los endpoints protegidos.',
+        },
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'JWT obtenido mediante el endpoint de login.',
         },
       },
       schemas: {

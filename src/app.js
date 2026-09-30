@@ -21,6 +21,7 @@ app.use('/api/proveedores', require('./routes/proveedores.routes'));
 app.use('/api/productos', require('./routes/productos.routes'));
 app.use('/api/ventas', require('./routes/ventas.routes'));
 app.use('/api/seguridad', require('./routes/seguridad.routes'));
+app.use('/api/auth', require('./routes/auth.routes'));
 
 app.use(manejarErrores);
 
