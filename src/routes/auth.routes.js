@@ -19,11 +19,11 @@ const router = express.Router();
  *       properties:
  *         nombre:
  *           type: string
- *           example: Vendedor Tienda
+ *           example: Cliente Tienda
  *         email:
  *           type: string
  *           format: email
- *           example: vendedor@tiendacj.com
+ *           example: cliente@tiendacj.com
  *         password:
  *           type: string
  *           format: password
@@ -37,7 +37,7 @@ const router = express.Router();
  *         email:
  *           type: string
  *           format: email
- *           example: vendedor@tiendacj.com
+ *           example: cliente@tiendacj.com
  *         password:
  *           type: string
  *           format: password
@@ -52,7 +52,7 @@ const router = express.Router();
  *     tags: [Autenticacion]
  *     description: >
  *       Registra un nuevo usuario utilizando bcrypt para proteger
- *       la contraseña. El rol es asignado por el servidor y no puede
+ *       la contraseña. El rol (siempre cliente) lo asigna el servidor y no puede
  *       ser definido por el cliente.
  *     requestBody:
  *       required: true
@@ -76,7 +76,7 @@ router.post("/registro", validarRegistro, validar, registrar);
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Autenticacion]
- *     description: Verifica email y contraseña. Todavía no genera JWT.
+ *     description: Verifica email y contraseña y genera un JWT.
  *     requestBody:
  *       required: true
  *       content:

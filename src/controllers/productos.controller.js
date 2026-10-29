@@ -1,3 +1,4 @@
+const { matchedData } = require('express-validator');
 const productosService = require('../services/productos.service');
 
 const listar = async (req, res, next) => {
@@ -20,7 +21,7 @@ const obtener = async (req, res, next) => {
 
 const crear = async (req, res, next) => {
   try {
-    const nuevoProducto = await productosService.crear(req.body);
+    const nuevoProducto = await productosService.crear(matchedData(req, { locations: ['body'] }));
     res.status(201).json(nuevoProducto);
   } catch (error) {
     next(error);
@@ -29,7 +30,7 @@ const crear = async (req, res, next) => {
 
 const actualizar = async (req, res, next) => {
   try {
-    const productoActualizado = await productosService.actualizar(req.params.id, req.body);
+    const productoActualizado = await productosService.actualizar(req.params.id, matchedData(req, { locations: ['body'] }));
     res.json(productoActualizado);
   } catch (error) {
     next(error);

@@ -9,7 +9,7 @@ const registrar = async (req, res, next) => {
   try {
     const datos = matchedData(req, { locations: ["body"] });
 
-    const usuarioExistente = usuariosService.obtenerUsuarioPorEmail(datos.email);
+    const usuarioExistente = await usuariosService.obtenerUsuarioPorEmail(datos.email);
     if (usuarioExistente) {
       return res.status(409).json({ mensaje: "Ya existe un usuario con ese correo electrónico" });
     }
@@ -27,6 +27,10 @@ const registrar = async (req, res, next) => {
       },
     });
   } catch (error) {
+    // Dos registros simultáneos con el mismo correo: lo frena el UNIQUE de PostgreSQL
+    if (error.code === "23505") {
+      return res.status(409).json({ mensaje: "Ya existe un usuario con ese correo electrónico" });
+    }
     next(error);
   }
 };

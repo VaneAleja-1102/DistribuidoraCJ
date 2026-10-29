@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const router = Router();
-
+const autenticarJWT = require('../middlewares/auth.middleware');
+const autorizarRoles = require('../middlewares/roles.middleware');
 const categoriasController = require('../controllers/categorias.controller');
 const validarCampos = require('../middlewares/validar.middleware');
 const {
@@ -8,6 +9,7 @@ const {
   actualizarCategoriaValidator,
   idValidator,
 } = require('../middlewares/categorias.validator');
+
 /**
  * @swagger
  * tags:
@@ -21,17 +23,23 @@ const {
  *   get:
  *     summary: Listar todas las categorías
  *     tags: [Categorias]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de categorías
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Categoria'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.get('/', categoriasController.listar);
+router.get(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor', 'cliente'),
+  categoriasController.listar
+);
 
 /**
  * @swagger
@@ -39,6 +47,9 @@ router.get('/', categoriasController.listar);
  *   get:
  *     summary: Obtener una categoría por id
  *     tags: [Categorias]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -48,18 +59,21 @@ router.get('/', categoriasController.listar);
  *     responses:
  *       200:
  *         description: Categoría encontrada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Categoria'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Categoría no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', idValidator, validarCampos, categoriasController.obtener);
+router.get(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor', 'cliente'),
+  idValidator,
+  validarCampos,
+  categoriasController.obtener
+);
 
 /**
  * @swagger
@@ -67,6 +81,9 @@ router.get('/:id', idValidator, validarCampos, categoriasController.obtener);
  *   post:
  *     summary: Crear una nueva categoría
  *     tags: [Categorias]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -85,14 +102,21 @@ router.get('/:id', idValidator, validarCampos, categoriasController.obtener);
  *     responses:
  *       201:
  *         description: Categoría creada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Categoria'
  *       400:
  *         description: Error de validación
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.post('/', crearCategoriaValidator, validarCampos, categoriasController.crear);
+router.post(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  crearCategoriaValidator,
+  validarCampos,
+  categoriasController.crear
+);
 
 /**
  * @swagger
@@ -100,6 +124,9 @@ router.post('/', crearCategoriaValidator, validarCampos, categoriasController.cr
  *   put:
  *     summary: Actualizar una categoría
  *     tags: [Categorias]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -119,10 +146,21 @@ router.post('/', crearCategoriaValidator, validarCampos, categoriasController.cr
  *     responses:
  *       200:
  *         description: Categoría actualizada
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Categoría no encontrada
  */
-router.put('/:id', actualizarCategoriaValidator, validarCampos, categoriasController.actualizar);
+router.put(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  actualizarCategoriaValidator,
+  validarCampos,
+  categoriasController.actualizar
+);
 
 /**
  * @swagger
@@ -130,6 +168,9 @@ router.put('/:id', actualizarCategoriaValidator, validarCampos, categoriasContro
  *   delete:
  *     summary: Eliminar una categoría
  *     tags: [Categorias]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -139,14 +180,20 @@ router.put('/:id', actualizarCategoriaValidator, validarCampos, categoriasContro
  *     responses:
  *       200:
  *         description: Categoría eliminada
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Categoría no encontrada
  */
-router.delete('/:id', idValidator, validarCampos, categoriasController.eliminar);
-router.get('/', categoriasController.listar);
-router.get('/:id', idValidator, validarCampos, categoriasController.obtener);
-router.post('/', crearCategoriaValidator, validarCampos, categoriasController.crear);
-router.put('/:id', actualizarCategoriaValidator, validarCampos, categoriasController.actualizar);
-router.delete('/:id', idValidator, validarCampos, categoriasController.eliminar);
+router.delete(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  idValidator,
+  validarCampos,
+  categoriasController.eliminar
+);
 
 module.exports = router;

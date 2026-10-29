@@ -1,51 +1,69 @@
-const { proveedores, getSiguienteId } = require('../data/proveedores');
+const { consultar } = require('../config/database');
+const { crearError, construirSet } = require('../utils/sql.util');
+
+const COLUMNAS = 'id, nombre, telefono, email';
+const MAPA = { nombre: 'nombre', telefono: 'telefono', email: 'email' };
 
 const obtenerTodos = async () => {
-  return proveedores;
+  const resultado = await consultar(`SELECT ${COLUMNAS} FROM public.proveedores ORDER BY id`);
+  return resultado.rows;
 };
 
 const obtenerPorId = async (id) => {
-  const proveedor = proveedores.find((p) => p.id === Number(id));
-  if (!proveedor) {
-    const error = new Error('Proveedor no encontrado');
-    error.status = 404;
-    throw error;
-  }
-  return proveedor;
+  const resultado = await consultar(
+    `SELECT ${COLUMNAS} FROM public.proveedores WHERE id = $1`,
+    [id]
+  );
+  if (resultado.rowCount === 0) throw crearError(404, 'Proveedor no encontrado');
+  return resultado.rows[0];
 };
 
 const crear = async (datos) => {
-  const nuevoProveedor = {
-    id: getSiguienteId(),
-    nombre: datos.nombre,
-    telefono: datos.telefono || '',
-    email: datos.email || '',
-  };
-  proveedores.push(nuevoProveedor);
-  return nuevoProveedor;
+  try {
+    const resultado = await consultar(
+      `INSERT INTO public.proveedores (nombre, telefono, email)
+       VALUES ($1, $2, $3)
+       RETURNING ${COLUMNAS}`,
+      [datos.nombre, datos.telefono ?? '', datos.email ?? '']
+    );
+    return resultado.rows[0];
+  } catch (error) {
+    if (error.code === '23505') throw crearError(409, 'Ya existe un proveedor con ese nombre');
+    throw error;
+  }
 };
 
 const actualizar = async (id, datos) => {
-  const proveedor = await obtenerPorId(id);
-  Object.assign(proveedor, datos);
-  return proveedor;
+  const { set, valores } = construirSet(MAPA, datos, 2);
+  if (!set) return obtenerPorId(id);
+
+  try {
+    const resultado = await consultar(
+      `UPDATE public.proveedores SET ${set} WHERE id = $1 RETURNING ${COLUMNAS}`,
+      [id, ...valores]
+    );
+    if (resultado.rowCount === 0) throw crearError(404, 'Proveedor no encontrado');
+    return resultado.rows[0];
+  } catch (error) {
+    if (error.code === '23505') throw crearError(409, 'Ya existe un proveedor con ese nombre');
+    throw error;
+  }
 };
 
 const eliminar = async (id) => {
-  const index = proveedores.findIndex((p) => p.id === Number(id));
-  if (index === -1) {
-    const error = new Error('Proveedor no encontrado');
-    error.status = 404;
+  try {
+    const resultado = await consultar(
+      'DELETE FROM public.proveedores WHERE id = $1 RETURNING id',
+      [id]
+    );
+    if (resultado.rowCount === 0) throw crearError(404, 'Proveedor no encontrado');
+    return { mensaje: 'Proveedor eliminado correctamente' };
+  } catch (error) {
+    if (error.code === '23503') {
+      throw crearError(409, 'No se puede eliminar el proveedor porque tiene productos asociados');
+    }
     throw error;
   }
-  proveedores.splice(index, 1);
-  return { mensaje: 'Proveedor eliminado correctamente' };
 };
 
-module.exports = {
-  obtenerTodos,
-  obtenerPorId,
-  crear,
-  actualizar,
-  eliminar,
-};
+module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar };

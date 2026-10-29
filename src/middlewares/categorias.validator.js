@@ -10,13 +10,13 @@ const crearCategoriaValidator = [
 ];
 
 const actualizarCategoriaValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
   body('nombre').optional().isString(),
   body('descripcion').optional().isString(),
 ];
 
 const idValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
 ];
 
 module.exports = {

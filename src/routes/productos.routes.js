@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const router = Router();
-
+const autenticarJWT = require('../middlewares/auth.middleware');
+const autorizarRoles = require('../middlewares/roles.middleware');
 const productosController = require('../controllers/productos.controller');
 const validarCampos = require('../middlewares/validar.middleware');
 const {
@@ -22,17 +23,23 @@ const {
  *   get:
  *     summary: Listar todos los productos
  *     tags: [Productos]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de productos
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Producto'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.get('/', productosController.listar);
+router.get(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor', 'cliente'),
+  productosController.listar
+);
 
 /**
  * @swagger
@@ -40,6 +47,9 @@ router.get('/', productosController.listar);
  *   get:
  *     summary: Obtener un producto por id
  *     tags: [Productos]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -49,18 +59,21 @@ router.get('/', productosController.listar);
  *     responses:
  *       200:
  *         description: Producto encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Producto'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Producto no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', idValidator, validarCampos, productosController.obtener);
+router.get(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor', 'cliente'),
+  idValidator,
+  validarCampos,
+  productosController.obtener
+);
 
 /**
  * @swagger
@@ -68,6 +81,9 @@ router.get('/:id', idValidator, validarCampos, productosController.obtener);
  *   post:
  *     summary: Crear un nuevo producto
  *     tags: [Productos]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -98,18 +114,21 @@ router.get('/:id', idValidator, validarCampos, productosController.obtener);
  *     responses:
  *       201:
  *         description: Producto creado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Producto'
  *       400:
- *         description: Error de validación (categoría o proveedor inexistente, datos faltantes)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *         description: Error de validación
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.post('/', crearProductoValidator, validarCampos, productosController.crear);
+router.post(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  crearProductoValidator,
+  validarCampos,
+  productosController.crear
+);
 
 /**
  * @swagger
@@ -117,6 +136,9 @@ router.post('/', crearProductoValidator, validarCampos, productosController.crea
  *   put:
  *     summary: Actualizar un producto
  *     tags: [Productos]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -142,18 +164,21 @@ router.post('/', crearProductoValidator, validarCampos, productosController.crea
  *     responses:
  *       200:
  *         description: Producto actualizado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Producto'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Producto no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', actualizarProductoValidator, validarCampos, productosController.actualizar);
+router.put(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  actualizarProductoValidator,
+  validarCampos,
+  productosController.actualizar
+);
 
 /**
  * @swagger
@@ -161,6 +186,9 @@ router.put('/:id', actualizarProductoValidator, validarCampos, productosControll
  *   delete:
  *     summary: Eliminar un producto
  *     tags: [Productos]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -170,18 +198,20 @@ router.put('/:id', actualizarProductoValidator, validarCampos, productosControll
  *     responses:
  *       200:
  *         description: Producto eliminado
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Producto no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', idValidator, validarCampos, productosController.eliminar);
-router.get('/', productosController.listar);
-router.get('/:id', idValidator, validarCampos, productosController.obtener);
-router.post('/', crearProductoValidator, validarCampos, productosController.crear);
-router.put('/:id', actualizarProductoValidator, validarCampos, productosController.actualizar);
-router.delete('/:id', idValidator, validarCampos, productosController.eliminar);
+router.delete(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  idValidator,
+  validarCampos,
+  productosController.eliminar
+);
 
 module.exports = router;

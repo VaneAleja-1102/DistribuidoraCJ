@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const router = Router();
-
+const autenticarJWT = require('../middlewares/auth.middleware');
+const autorizarRoles = require('../middlewares/roles.middleware');
 const proveedoresController = require('../controllers/proveedores.controller');
 const validarCampos = require('../middlewares/validar.middleware');
 const {
@@ -22,17 +23,23 @@ const {
  *   get:
  *     summary: Listar todos los proveedores
  *     tags: [Proveedores]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de proveedores
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Proveedor'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.get('/', proveedoresController.listar);
+router.get(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor'),
+  proveedoresController.listar
+);
 
 /**
  * @swagger
@@ -40,6 +47,9 @@ router.get('/', proveedoresController.listar);
  *   get:
  *     summary: Obtener un proveedor por id
  *     tags: [Proveedores]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -49,18 +59,21 @@ router.get('/', proveedoresController.listar);
  *     responses:
  *       200:
  *         description: Proveedor encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Proveedor'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Proveedor no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', idValidator, validarCampos, proveedoresController.obtener);
+router.get(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador', 'vendedor'),
+  idValidator,
+  validarCampos,
+  proveedoresController.obtener
+);
 
 /**
  * @swagger
@@ -68,6 +81,9 @@ router.get('/:id', idValidator, validarCampos, proveedoresController.obtener);
  *   post:
  *     summary: Crear un nuevo proveedor
  *     tags: [Proveedores]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -89,18 +105,21 @@ router.get('/:id', idValidator, validarCampos, proveedoresController.obtener);
  *     responses:
  *       201:
  *         description: Proveedor creado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Proveedor'
  *       400:
  *         description: Error de validación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  */
-router.post('/', crearProveedorValidator, validarCampos, proveedoresController.crear);
+router.post(
+  '/',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  crearProveedorValidator,
+  validarCampos,
+  proveedoresController.crear
+);
 
 /**
  * @swagger
@@ -108,6 +127,9 @@ router.post('/', crearProveedorValidator, validarCampos, proveedoresController.c
  *   put:
  *     summary: Actualizar un proveedor
  *     tags: [Proveedores]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -129,18 +151,21 @@ router.post('/', crearProveedorValidator, validarCampos, proveedoresController.c
  *     responses:
  *       200:
  *         description: Proveedor actualizado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Proveedor'
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Proveedor no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', actualizarProveedorValidator, validarCampos, proveedoresController.actualizar);
+router.put(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  actualizarProveedorValidator,
+  validarCampos,
+  proveedoresController.actualizar
+);
 
 /**
  * @swagger
@@ -148,6 +173,9 @@ router.put('/:id', actualizarProveedorValidator, validarCampos, proveedoresContr
  *   delete:
  *     summary: Eliminar un proveedor
  *     tags: [Proveedores]
+ *     security:
+ *       - ApiKeyAuth: []
+ *         BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -157,18 +185,20 @@ router.put('/:id', actualizarProveedorValidator, validarCampos, proveedoresContr
  *     responses:
  *       200:
  *         description: Proveedor eliminado
+ *       401:
+ *         description: Credenciales de autenticación ausentes o inválidas
+ *       403:
+ *         description: Usuario sin permisos para realizar la operación
  *       404:
  *         description: Proveedor no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', idValidator, validarCampos, proveedoresController.eliminar);
-router.get('/', proveedoresController.listar);
-router.get('/:id', idValidator, validarCampos, proveedoresController.obtener);
-router.post('/', crearProveedorValidator, validarCampos, proveedoresController.crear);
-router.put('/:id', actualizarProveedorValidator, validarCampos, proveedoresController.actualizar);
-router.delete('/:id', idValidator, validarCampos, proveedoresController.eliminar);
+router.delete(
+  '/:id',
+  autenticarJWT,
+  autorizarRoles('administrador'),
+  idValidator,
+  validarCampos,
+  proveedoresController.eliminar
+);
 
 module.exports = router;

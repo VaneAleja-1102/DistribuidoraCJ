@@ -1,60 +1,50 @@
 const { body, param } = require('express-validator');
-const { categorias } = require('../data/categorias');
-const { proveedores } = require('../data/proveedores');
+const { debeExistir } = require('../utils/existe.util');
 
 const crearProductoValidator = [
   body('nombre')
     .notEmpty().withMessage('El nombre es obligatorio')
-    .isString().withMessage('El nombre debe ser texto'),
+    .isString().withMessage('El nombre debe ser texto')
+    .trim(),
   body('precio')
     .notEmpty().withMessage('El precio es obligatorio')
-    .isFloat({ min: 0 }).withMessage('El precio debe ser un número positivo'),
+    .isFloat({ min: 0 }).withMessage('El precio debe ser un número positivo')
+    .toFloat(),
   body('stock')
     .optional()
-    .isInt({ min: 0 }).withMessage('El stock debe ser un número entero positivo'),
+    .isInt({ min: 0 }).withMessage('El stock debe ser un número entero positivo')
+    .toInt(),
   body('categoriaId')
     .notEmpty().withMessage('La categoría es obligatoria')
-    .isInt().withMessage('categoriaId debe ser numérico')
-    .custom((valor) => {
-      const existe = categorias.some((c) => c.id === Number(valor));
-      if (!existe) throw new Error('La categoría indicada no existe');
-      return true;
-    }),
+    .isInt({ min: 1 }).withMessage('categoriaId debe ser numérico').bail()
+    .toInt()
+    .custom(debeExistir('categorias', 'La categoría indicada no existe')),
   body('proveedorId')
     .notEmpty().withMessage('El proveedor es obligatorio')
-    .isInt().withMessage('proveedorId debe ser numérico')
-    .custom((valor) => {
-      const existe = proveedores.some((p) => p.id === Number(valor));
-      if (!existe) throw new Error('El proveedor indicado no existe');
-      return true;
-    }),
+    .isInt({ min: 1 }).withMessage('proveedorId debe ser numérico').bail()
+    .toInt()
+    .custom(debeExistir('proveedores', 'El proveedor indicado no existe')),
 ];
 
 const actualizarProductoValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
-  body('nombre').optional().isString(),
-  body('precio').optional().isFloat({ min: 0 }),
-  body('stock').optional().isInt({ min: 0 }),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
+  body('nombre').optional().isString().trim(),
+  body('precio').optional().isFloat({ min: 0 }).withMessage('El precio debe ser un número positivo').toFloat(),
+  body('stock').optional().isInt({ min: 0 }).withMessage('El stock debe ser un número entero positivo').toInt(),
   body('categoriaId')
     .optional()
-    .isInt().withMessage('categoriaId debe ser numérico')
-    .custom((valor) => {
-      const existe = categorias.some((c) => c.id === Number(valor));
-      if (!existe) throw new Error('La categoría indicada no existe');
-      return true;
-    }),
+    .isInt({ min: 1 }).withMessage('categoriaId debe ser numérico').bail()
+    .toInt()
+    .custom(debeExistir('categorias', 'La categoría indicada no existe')),
   body('proveedorId')
     .optional()
-    .isInt().withMessage('proveedorId debe ser numérico')
-    .custom((valor) => {
-      const existe = proveedores.some((p) => p.id === Number(valor));
-      if (!existe) throw new Error('El proveedor indicado no existe');
-      return true;
-    }),
+    .isInt({ min: 1 }).withMessage('proveedorId debe ser numérico').bail()
+    .toInt()
+    .custom(debeExistir('proveedores', 'El proveedor indicado no existe')),
 ];
 
 const idValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
 ];
 
 module.exports = {

@@ -21,6 +21,9 @@ const opciones = {
       { name: 'Ventas', description: 'Registro de ventas diarias y control de inventario' },
       { name: 'Seguridad', description: 'Endpoints relacionados con autenticación y seguridad de la API' },
       { name: 'Autenticacion', description: 'Registro e inicio de sesión de usuarios' },
+      { name: 'Usuarios', description: 'Gestión administrativa de usuarios del sistema' },
+      { name: 'Clientes', description: 'Perfiles de clientes asociados a usuarios' },
+      { name: 'Vendedores', description: 'Perfiles de vendedores asociados a usuarios' },
     ],
     components: {
       securitySchemes: {
@@ -70,6 +73,9 @@ const opciones = {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
+            clienteId: { type: 'integer', example: 4 },
+            vendedorId: { type: 'integer', example: 3 },
+            estado: { type: 'string', enum: ['registrada', 'pagada', 'entregada', 'anulada'] },
             fecha: { type: 'string', format: 'date-time' },
             total: { type: 'number', example: 29500 },
             detalle: {

@@ -13,14 +13,14 @@ const crearProveedorValidator = [
 ];
 
 const actualizarProveedorValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
   body('nombre').optional().isString(),
   body('telefono').optional().isString(),
   body('email').optional().isEmail().withMessage('El email no tiene un formato válido'),
 ];
 
 const idValidator = [
-  param('id').isInt().withMessage('El id debe ser numérico'),
+  param('id').isInt({ min: 1 }).withMessage('El id debe ser numérico').toInt(),
 ];
 
 module.exports = {
